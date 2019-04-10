@@ -31,6 +31,7 @@ def key_to_path(k):
     return int.from_bytes(k, 'big')
 
 tt256m1 = 2**256 - 1
+tt256 = 2**256
 
 # And convert back
 def path_to_key(k):
@@ -45,7 +46,7 @@ def get(db, root, key):
             return b'\x00' * 32
         child = db.get(v)
         if len(child) == 65:
-            if (path % 2**256) == key_to_path(child[1:33]):
+            if (path % tt256) == key_to_path(child[1:33]):
                 return child[33:]
             else:
                 return b'\x00' * 32
