@@ -20,11 +20,16 @@ def vanilla():
         assert t1.get(d, r, k) == k
     print("Naive bintree time to update: %.4f" % (time.time() - a))
     print("Root: %s" % binascii.hexlify(r))
+    print("Writes: %d, reads: %d" % (d.writes, d.reads))
+    d.reads = 0
     b = time.time()
     for k in keys[:num_keys]:
         proof = t1.make_merkle_proof(d, r, k)
         assert t1.verify_proof(proof, r, k, k)
+        print("proof nodes length is %d" % len(proof))
+        print("proof length is %d" % sum([len(p) for p in proof]))
     print("Naive bintree time to create and verify %d proofs: %.4f" % (num_keys, time.time() - b))
+    print("Reads: %d" % d.reads)
 
 
 def vanilla_4():
@@ -37,20 +42,23 @@ def vanilla_4():
         r = t4.update(d, r, k, k)
     for k in keys[:num_keys]:
         assert t4.get(d, r, k) == k
-    print("Width 4 bintree time to update: %.4f" % (time.time() - a))
+    print("Width 4 tree time to update: %.4f" % (time.time() - a))
     print("Root: %s" % binascii.hexlify(r))
+    print("Writes: %d, reads: %d" % (d.writes, d.reads))
+    d.reads = 0
     b = time.time()
     for k in keys[:num_keys]:
         proof = t4.make_merkle_proof(d, r, k)
         assert t4.verify_proof(proof, r, k, k)
-    print("Width 4 bintree time to create and verify %d proofs: %.4f" % (num_keys, time.time() - b))
+    print("Width 4 tree time to create and verify %d proofs: %.4f" % (num_keys, time.time() - b))
+    print("Reads: %d" % d.reads)
 
 
 def optimized():
     d = t2.EphemDB()
     r = t2.new_tree(d)
     a = time.time()
-    num_keys = 3000
+    num_keys = 1000
     for k in keys[:num_keys]:
         r = t2.update(d, r, k, k)
     print("DB-optimized bintree time to update: %.4f" % (time.time() - a))
@@ -58,18 +66,19 @@ def optimized():
     print("Writes: %d, reads: %d" % (d.writes, d.reads))
     d.reads = 0
     half = num_keys//2
-    for k in keys[:half]:
+    for k in keys[:num_keys]:
         # assert t2.get(d, r, k) == k
         proof = []
         assert t2.get(d, r, k, proof) == k
-        print("proof length is %d" % len(proof))
-        print("proof node with len 65 is %s" % [i for i, p in enumerate(proof) if len(p) == 65])
+        print("proof nodes length is %d" % len(proof))
+        print("proof length is %d" % sum([len(p) for p in proof]))
+        # print("proof node with len 65 is %s" % [i for i, p in enumerate(proof) if len(p) == 65])
         assert t2.verify_proof(proof, r, k, k)
-    for k in keys[-half:]:
-        #assert t2.get(d, r, k) == b'\x00' * 32
-        proof = []
-        assert t2.get(d, r, k, proof) == t2.zero
-        assert t2.verify_proof(proof, r, k, t2.zero)
+    # for k in keys[-num_keys:]:
+    #     #assert t2.get(d, r, k) == b'\x00' * 32
+    #     proof = []
+    #     assert t2.get(d, r, k, proof) == t2.zero
+    #     assert t2.verify_proof(proof, r, k, t2.zero)
         # print("proof length (-ve) is %d" % len(proof))
     print("Reads: %d" % d.reads)
 
@@ -88,13 +97,13 @@ def optimized_1():
         proof = []
         assert t2._get(d, r, k, proof) == v
         assert t2._verify_proof(proof, r, k, v)
-        print("proof length is %d" % len(proof))
+        # print("proof length is %d" % len(proof))
 
     for k in [5, 99, 1001]:
         proof = []
         assert t2._get(d, r, k, proof) == t2.zero
         assert t2._verify_proof(proof, r, k, t2.zero)
-        print("proof length is %d" % len(proof))
+        # print("proof length is %d" % len(proof))
 
     for k in [7227, 4562, 1085, 1459, 4798, 3645, 1214, 4699, 7700, 3288]:
         v = (k & t2.tt256m1).to_bytes(32, 'big')
@@ -115,23 +124,29 @@ def hexary():
     d = t3.EphemDB()
     r = t3.new_tree(d)
     a = time.time()
-    for k in keys[:1000]:
+    num_keys = 1000
+    for k in keys[:num_keys]:
         r = t3.update(d, r, k, k)
-    print("DB-optimized bintree time to update: %.4f" % (time.time() - a))
+    print("DB-optimized hexary tree time to update: %.4f" % (time.time() - a))
     print("Root: %s" % binascii.hexlify(r))
     print("Writes: %d, reads: %d" % (d.writes, d.reads))
     d.reads = 0
-    for k in keys[:500]:
+    for k in keys[:num_keys]:
         assert t3.get(d, r, k) == k
-    for k in keys[-500:]:
-        assert t3.get(d, r, k) == b'\x00' * 32
+    # for k in keys[-500:]:
+    #     assert t3.get(d, r, k) == b'\x00' * 32
     print("Reads: %d" % d.reads)
 
 
-#vanilla()
-#optimized()
-#hexary()
-
-#optimized_1()
-
+print("Vanilla SMT")
+vanilla()
+print('\n')
+print("Optimized SMT")
+optimized()
+print('\n')
+print("Optimized hexary SMT")
+hexary()
+print('\n')
+# optimized_1()
+print("Vanilla 4-ary SMT")
 vanilla_4()
