@@ -27,7 +27,6 @@ def vanilla():
         proof = t1.make_merkle_proof(d, r, k)
         assert t1.verify_proof(proof, r, k, k)
         print("proof nodes length is %d" % len(proof))
-        print("proof length is %d" % sum([len(p) for p in proof]))
     print("Naive bintree time to create and verify %d proofs: %.4f" % (num_keys, time.time() - b))
     print("Reads: %d" % d.reads)
 
@@ -50,6 +49,7 @@ def vanilla_4():
     for k in keys[:num_keys]:
         proof = t4.make_merkle_proof(d, r, k)
         assert t4.verify_proof(proof, r, k, k)
+        print("proof nodes length is %d" % len(proof))
     print("Width 4 tree time to create and verify %d proofs: %.4f" % (num_keys, time.time() - b))
     print("Reads: %d" % d.reads)
 
@@ -71,7 +71,6 @@ def optimized():
         proof = []
         assert t2.get(d, r, k, proof) == k
         print("proof nodes length is %d" % len(proof))
-        print("proof length is %d" % sum([len(p) for p in proof]))
         # print("proof node with len 65 is %s" % [i for i, p in enumerate(proof) if len(p) == 65])
         assert t2.verify_proof(proof, r, k, k)
     # for k in keys[-num_keys:]:
@@ -144,9 +143,9 @@ print('\n')
 print("Optimized SMT")
 optimized()
 print('\n')
-print("Optimized hexary SMT")
-hexary()
+# print("Optimized hexary SMT")
+# hexary()
 print('\n')
 # optimized_1()
-print("Vanilla 4-ary SMT")
-vanilla_4()
+# print("Vanilla 4-ary SMT")
+#vanilla_4()
